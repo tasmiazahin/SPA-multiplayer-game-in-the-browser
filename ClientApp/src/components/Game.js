@@ -16,6 +16,58 @@ const GameController = () => {
     //const [gamesWon, setGamesWon] = useState(0);
 
     useEffect(() => {
+        const connect = new HubConnectionBuilder().withUrl("gamehub").build();
+        //const connect = new HubConnectionBuilder()
+        //    //.ConfigureLogging(LogLevel.Debug)
+        //    .withUrl("/gamehub", {
+        //    skipnegotiation: true,
+        //    transport: HttpTransportType.WebSockets
+        //}).build();
+
+        console.log(connect);
+
+        setConnection(connect);
+    }, []);
+
+
+
+    useEffect(() => {
+        if (connection) {
+            //connection
+            //    .start()
+            //    .then(() => {
+            //        //connection.on("NewGame", (gameid) => {
+            //        //    notification.open({
+            //        //        message: "new game started",
+            //        //        description: gameid,
+            //        //    });
+            //        //});
+            //        console.log("");
+            //    })
+            //    .catch((error) => console.log(error));
+
+            console.log("before connected");
+            //connection.start();
+
+            connection.on("NewGame", (user, message) => {
+                console.log('Connected!');
+
+                
+            });
+
+
+            connection.start().then(function () {
+                console.log('Connected!');
+            }).catch(function (err) {
+                return console.error(err.toString());
+            });
+
+
+        }
+    }, [connection]);  
+
+
+    useEffect(() => {
         const fetchData = async () => {
             try {
                 const token = await authService.getAccessToken();
