@@ -1,8 +1,12 @@
 ﻿import React, { useState, useEffect } from 'react';
 import authService from './api-authorization/AuthorizeService';
 import './Game.css'
+import { HubConnectionBuilder } from "@microsoft/signalr";
+import { notification } from "antd";
+
 
 const GameController = () => {
+    const [connection, setConnection] = useState(null);
     const [gameId, setGameId] = useState(null);
     const [guess, setGuess] = useState('');
     const [result, setResult] = useState('');
@@ -16,7 +20,7 @@ const GameController = () => {
     //const [gamesWon, setGamesWon] = useState(0);
 
     useEffect(() => {
-        const connect = new HubConnectionBuilder().withUrl("gamehub").build();
+        const connect = new HubConnectionBuilder().withUrl("/gamehub").build();
         //const connect = new HubConnectionBuilder()
         //    //.ConfigureLogging(LogLevel.Debug)
         //    .withUrl("/gamehub", {
@@ -33,36 +37,17 @@ const GameController = () => {
 
     useEffect(() => {
         if (connection) {
-            //connection
-            //    .start()
-            //    .then(() => {
-            //        //connection.on("NewGame", (gameid) => {
-            //        //    notification.open({
-            //        //        message: "new game started",
-            //        //        description: gameid,
-            //        //    });
-            //        //});
-            //        console.log("");
-            //    })
-            //    .catch((error) => console.log(error));
-
-            console.log("before connected");
-            //connection.start();
-
-            connection.on("NewGame", (user, message) => {
-                console.log('Connected!');
-
-                
-            });
-
-
-            connection.start().then(function () {
-                console.log('Connected!');
-            }).catch(function (err) {
-                return console.error(err.toString());
-            });
-
-
+            connection
+                .start()
+                .then(() => {
+                    connection.on("NewGame", (gameid) => {
+                        notification.open({
+                            message: "new game started",
+                            description: gameId,
+                        });
+                    });
+                })
+                .catch((error) => console.log(error));
         }
     }, [connection]);  
 
@@ -126,6 +111,7 @@ const GameController = () => {
             });
             const data = await response.json();
             setGameId(data.gameId);
+            if (connection) await connection.send("NotifyNewGame", data.gameId);
             setResult('');
             setMessage('');
             setGameStarted(true);
