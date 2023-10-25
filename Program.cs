@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.EntityFrameworkCore;
 using SPAGameASPReact.Data;
+using SPAGameASPReact.Hubs;
 using SPAGameASPReact.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,7 +28,21 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.Configure<JwtBearerOptions>("IdentityServerJwtBearer", o => o.Authority = "https://localhost:44455");
 
+builder.Services.AddCors(o => o.AddPolicy("CorsPolicy", builder => {
+    builder
+    .AllowAnyMethod()
+    .AllowAnyHeader()
+    ///.SetIsOriginAllowed(hosts => true)
+    .AllowCredentials()
+    .WithOrigins("https://localhost:44455", "https://localhost:7000", "https://localhost:44360");
+}));
+
+builder.Services.AddSignalR();
+
+
 var app = builder.Build();
+
+app.UseCors("CorsPolicy");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -48,10 +63,15 @@ app.UseAuthentication();
 app.UseIdentityServer();
 app.UseAuthorization();
 
+
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller}/{action=Index}/{id?}");
 app.MapRazorPages();
+
+app.MapHub<GameHub>("/gameHub");
+
 
 app.MapFallbackToFile("index.html"); ;
 

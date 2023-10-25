@@ -12,7 +12,8 @@ const context = [
     "/connect",
     "/ApplyDatabaseMigrations",
     "/_framework",
-    "/api"
+    "/api",
+    "/gamehub"
 ];
 
 module.exports = function (app) {
@@ -20,9 +21,7 @@ module.exports = function (app) {
         proxyTimeout: 10000,
         target: target,
         secure: false,
-        headers: {
-            Connection: 'Keep-Alive'
-        }
+        ws:true
     });
 
     app.use(appProxy);

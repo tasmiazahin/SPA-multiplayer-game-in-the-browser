@@ -1,8 +1,12 @@
 ﻿import React, { useState, useEffect } from 'react';
 import authService from './api-authorization/AuthorizeService';
 import './Game.css'
+import { HubConnectionBuilder } from "@microsoft/signalr";
+import { notification } from "antd";
+
 
 const GameController = () => {
+    const [connection, setConnection] = useState(null);
     const [gameId, setGameId] = useState(null);
     const [guess, setGuess] = useState('');
     const [result, setResult] = useState('');
@@ -14,6 +18,39 @@ const GameController = () => {
 
     //const [gamesPlayed, setGamesPlayed] = useState(0);
     //const [gamesWon, setGamesWon] = useState(0);
+
+    useEffect(() => {
+        const connect = new HubConnectionBuilder().withUrl("/gamehub").build();
+        //const connect = new HubConnectionBuilder()
+        //    //.ConfigureLogging(LogLevel.Debug)
+        //    .withUrl("/gamehub", {
+        //    skipnegotiation: true,
+        //    transport: HttpTransportType.WebSockets
+        //}).build();
+
+        console.log(connect);
+
+        setConnection(connect);
+    }, []);
+
+
+
+    useEffect(() => {
+        if (connection) {
+            connection
+                .start()
+                .then(() => {
+                    connection.on("NewGame", (gameid) => {
+                        notification.open({
+                            message: "new game started",
+                            description: gameId,
+                        });
+                    });
+                })
+                .catch((error) => console.log(error));
+        }
+    }, [connection]);  
+
 
     useEffect(() => {
         const fetchData = async () => {
@@ -74,6 +111,7 @@ const GameController = () => {
             });
             const data = await response.json();
             setGameId(data.gameId);
+            if (connection) await connection.send("NotifyNewGame", data.gameId);
             setResult('');
             setMessage('');
             setGameStarted(true);

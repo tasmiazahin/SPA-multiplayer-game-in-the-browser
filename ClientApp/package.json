@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@microsoft/signalr": "^6.0.22",
+    "antd": "^5.10.2",
     "bootstrap": "^5.2.3",
     "http-proxy-middleware": "^2.0.6",
     "jquery": "^3.6.4",
